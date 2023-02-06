@@ -139,7 +139,7 @@ function StakePoolHome(props: { stakePoolMetadataName: string | null }) {
       }}
     >
       <Head>
-        <title>{stakePoolDisplayName}</title>
+        <title>Sovereign Stake</title>
         <meta name="title" content={stakePoolDisplayName} />
         <meta
           name="description"
@@ -151,9 +151,7 @@ function StakePoolHome(props: { stakePoolMetadataName: string | null }) {
               : 'Stake your Solana NFTs powered by Cardinal Staking'
           }
         />
-        <meta name="image" content="https://stake.cardinal.so/preview.png" />
-        <meta name="og:image" content="https://stake.cardinal.so/preview.png" />
-        <link rel="icon" href={stakePoolMetadata?.imageUrl ?? `/favicon.ico`} />
+        <link rel="icon" href={stakePoolMetadata?.imageUrl ?? `/mainlogo.png`} />
         <script
           defer
           data-domain="stake.cardinal.so"

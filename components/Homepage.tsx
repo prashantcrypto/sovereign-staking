@@ -4,7 +4,6 @@ import { useAllStakePools } from 'hooks/useAllStakePools'
 import Head from 'next/head'
 
 import { CollectionsView } from './CollectionsView'
-import { MainHero } from './MainHero'
 
 function Homepage() {
   const allStakePools = useAllStakePools()
@@ -12,15 +11,14 @@ function Homepage() {
   return (
     <div className="bg-dark-5">
       <Head>
-        <title>Cardinal NFT Staking</title>
-        <meta name="title" content="NFT Staking on Solana" />
+        <title>Sovereign stake</title>
+        <meta name="title" content="sovereign stake" />
         <meta
           name="description"
-          content="Launch staking for your NFT collection on Solana with reward distribution"
+          content="
+          sovereign-staking"
         />
-        <meta name="image" content="https://stake.cardinal.so/preview.png" />
-        <meta name="og:image" content="https://stake.cardinal.so/preview.png" />
-        <link rel="icon" href={'/favicon.ico'} />
+        <link rel="icon" href={'/mainlogo.ico'} />
         <script
           defer
           data-domain="stake.cardinal.so"
@@ -29,7 +27,6 @@ function Homepage() {
       </Head>
 
       <Banner />
-      <MainHero />
       <div className="mx-auto flex flex-col gap-16 px-8 md:px-16">
         <CollectionsView
           configs={allStakePools.data?.stakePoolsWithMetadata.filter(
@@ -39,9 +36,6 @@ function Homepage() {
                 pool.stakePoolMetadata?.notFound
               )
           )}
-        />
-        <CollectionsView
-          configs={allStakePools.data?.stakePoolsWithoutMetadata}
         />
       </div>
       <FooterSlim />

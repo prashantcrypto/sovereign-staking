@@ -7,15 +7,22 @@ import { useStakePoolMetadataCtx } from 'providers/StakePoolMetadataProvider'
 
 import { RewardsRate } from '@/components/hero-stats/RewardsRate'
 import { TreasuryBalance } from '@/components/hero-stats/TreasuryBalance'
+import { useRewardMintInfo } from 'hooks/useRewardMintInfo'
+import { useRewardsRate } from 'hooks/useRewardsRate'
+import { formatMintNaturalAmountAsDecimal } from 'common/units'
+import { useRewards } from 'hooks/useRewards'
 
 export const HeroStats: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
   className,
 }: React.HTMLAttributes<HTMLDivElement>) => {
   const rewardDistributorData = useRewardDistributorData()
+  const rewardMintInfo = useRewardMintInfo()
+  const rewardsRate = useRewardsRate()
   const stakePoolEntries = useStakePoolEntries()
   const { data: maxStaked } = useStakePoolMaxStaked()
   const totalStaked = useStakePoolTotalStaked()
   const { data: stakePoolMetadata } = useStakePoolMetadataCtx()
+  const rewards = useRewards()
 
   return (
     <div
@@ -50,34 +57,7 @@ export const HeroStats: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
           </div>
         )}
       </div>
-      {maxStaked && (
-        <>
-          <div className="mx-6 my-auto hidden h-10 w-[1px] bg-border md:flex"></div>
-          <div className="flex flex-1 flex-col items-center justify-center">
-            <p
-              className="text-lg text-medium-4"
-              style={{ color: stakePoolMetadata?.colors?.fontColorTertiary }}
-            >
-              Percent Staked
-            </p>
-            {!stakePoolEntries.data ? (
-              <div className="h-6 w-10 animate-pulse rounded-md bg-border"></div>
-            ) : (
-              <div
-                className="text-center text-xl text-light-1"
-                style={{ color: stakePoolMetadata?.colors?.fontColor }}
-              >
-                {stakePoolEntries.data?.length &&
-                  Math.floor(
-                    ((stakePoolEntries.data?.length * 100) / (maxStaked ?? 0)) *
-                      10000
-                  ) / 10000}
-                %
-              </div>
-            )}
-          </div>
-        </>
-      )}
+     
       {rewardDistributorData.data && (
         <>
           <div className="mx-6 my-auto hidden h-10 w-[1px] bg-border md:flex"></div>
@@ -95,6 +75,29 @@ export const HeroStats: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
             <RewardsRate />
           </div>
           <div className="mx-6 my-auto hidden h-10 w-[1px] bg-border md:flex"></div>
+
+          <div className="flex flex-row items-center justify-center gap-2">
+        <p className="text-lg text-medium-4">Earnings:</p>
+        {!rewards.data || !rewardMintInfo.data ? (
+          <div className="h-6 w-10 animate-pulse rounded-md bg-border"></div>
+        ) : (
+          <div
+            className="text-center text-lg text-light-1"
+            style={{ color: stakePoolMetadata?.colors?.fontColor }}
+          >
+            {formatMintNaturalAmountAsDecimal(
+              rewardMintInfo.data.mintInfo,
+              rewards.data?.claimableRewards,
+              Math.min(rewardMintInfo.data.mintInfo.decimals, 6)
+            )}{' '}
+            {rewardMintInfo.data.tokenListData?.name ||
+              "SQUARE" ||
+              '???'}
+          </div>
+        )}
+      </div>
+
+          <div className="mx-6 my-auto hidden h-10 w-[1px] bg-border md:flex"></div>
           <div className="flex flex-1 flex-col items-center justify-center">
             <p
               className="text-lg text-medium-4"
@@ -106,6 +109,7 @@ export const HeroStats: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
           </div>
         </>
       )}
+      
     </div>
   )
 }

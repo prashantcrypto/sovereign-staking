@@ -2,9 +2,21 @@ import { SOCIALS } from './Footer'
 
 export const FooterSlim = () => {
   return (
-    <div className="mt-14 w-full px-4 py-4">
-      <div className="flex flex-col items-center justify-between gap-8 rounded-xl py-4 px-8 md:flex-row">
-        <div className="flex gap-5 text-2xl text-gray-200 md:text-lg">
+    <div className="mt-5 px-10 pt-5 pb-5 md:px-32 ">
+      <div className="flex w-full flex-wrap items-start justify-between gap-10 pt-10">
+        <div className="flex gap-10 self-end text-center md:gap-20"></div>
+      </div>
+      <div className="text-md flex items-center justify-between border-t border-white py-4 pt-8 text-gray-400">
+        <div className="footerimgcontainer">
+          <a
+            target="_blank"
+            href="https://thesovereign.co/"
+            className="flex cursor-pointer text-xl font-semibold text-black hover:text-gray-300"
+          >
+            <img className="footerimage" src="mainlogo.png" />
+          </a>
+        </div>
+        <div className="flex gap-4 text-gray-100">
           {Object.entries(SOCIALS).map(([id, { icon, link }]) => {
             return (
               <a
@@ -12,38 +24,12 @@ export const FooterSlim = () => {
                 href={link}
                 target="_blank"
                 rel="noreferrer"
-                className={`transition-colors hover:text-primary`}
+                className={`hover:text-primary z-50 text-2xl text-white opacity-100 transition-opacity hover:text-gray-200`}
               >
                 {icon}
               </a>
             )
           })}
-        </div>
-        <div className="flex flex-col gap-8 text-center text-base text-medium-4 md:flex-row md:text-left">
-          <a
-            href="https://docs.cardinal.so/"
-            target="_blank"
-            rel="noreferrer"
-            className="cursor-pointer transition-colors hover:text-primary"
-          >
-            Documentation
-          </a>
-          <a
-            href="https://github.com/cardinal-labs"
-            target="_blank"
-            rel="noreferrer"
-            className="cursor-pointer transition-colors hover:text-primary"
-          >
-            Github
-          </a>
-          <a
-            href="mailto:team@cardinal.so"
-            target="_blank"
-            rel="noreferrer"
-            className="cursor-pointer transition-colors hover:text-primary"
-          >
-            Contact
-          </a>
         </div>
       </div>
     </div>

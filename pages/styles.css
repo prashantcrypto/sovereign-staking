@@ -11,22 +11,165 @@
 @font-face{font-family:industry;src:url(https://use.typekit.net/af/94f9bd/00000000000000007735a64f/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i7&v=3) format("woff2"),url(https://use.typekit.net/af/94f9bd/00000000000000007735a64f/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i7&v=3) format("woff"),url(https://use.typekit.net/af/94f9bd/00000000000000007735a64f/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i7&v=3) format("opentype");font-weight:500;font-style:italic;font-stretch:normal;font-display:auto;}
 @font-face{font-family:industry;src:url(https://use.typekit.net/af/08fe52/00000000000000007735a650/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3) format("woff2"),url(https://use.typekit.net/af/08fe52/00000000000000007735a650/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3) format("woff"),url(https://use.typekit.net/af/08fe52/00000000000000007735a650/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=n4&v=3) format("opentype");font-weight:400;font-style:normal;font-stretch:normal;font-display:auto;}
 @font-face{font-family:industry;src:url(https://use.typekit.net/af/79952e/00000000000000007735a651/30/l?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i4&v=3) format("woff2"),url(https://use.typekit.net/af/79952e/00000000000000007735a651/30/d?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i4&v=3) format("woff"),url(https://use.typekit.net/af/79952e/00000000000000007735a651/30/a?primer=7cdcb44be4a7db8877ffa5c0007b8dd865b3bbc383831fe2ea177f62257a9191&fvd=i4&v=3) format("opentype");font-weight:400;font-style:italic;font-stretch:normal;font-display:auto;}
-@font-face {
-  font-family: GTA;
-  src: url(../public/GTA.otf) format("opentype");
-}
-@font-face {
-  font-family: SUP;
-  src: url(../public/SUP.ttf) format("opentype");
-}
 body {
-  font-family: SFHello, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
-    Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-    'Segoe UI Symbol';
-  @apply bg-gray-900;
-  color: #fff;
+  font-family: fot-udmincho-pr6n, serif;
+  font-style: normal;
+  font-weight: 700;
+  background-color: #414141 !important;
+  background-image: linear-gradient(315deg, #161414 0%, #1d1d1d 74%) !important;
+  ;
 }
 
-::-webkit-calendar-picker-indicator {
-  filter: invert(1);
+.bgImage {
+  position: fixed;
+  opacity: 0.02;
+  background-image: url('../public/mainlogo.png');
+  background-size: cover;
+  height: 100%;
+  width: 100%;
+
+}
+
+.bg-white {
+  background: #3a3731 !important
+}
+
+.rounded-md {
+  border-radius: 1.375rem
+}
+
+.absolute.top-2.left-2 {
+  height: 15px !important;
+  width: 15px !important;
+  content: '✔';
+  position: absolute;
+  border-radius: 50%;
+  background-color:
+    #000000 !important;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, .3)
+}
+
+
+.wallet-adapter-button {
+
+  background: #363738d8 !important;
+  color: #ffffff !important;
+}
+
+
+.text-lg {
+  color: #8b8b8b;
+}
+
+.text-right {
+  color: #ffffff;
+}
+
+.underline {
+  color: #8b8b8b !important;
+}
+
+.text-sm {
+  color: #8b8b8b !important;
+}
+
+.font-semibold {
+  color: #8b8b8b !important;
+}
+
+.font-normal {
+  color: #8b8b8b !important;
+}
+
+
+
+.lineargradi {
+  margin-top: 30px;
+  width: 100%;
+  height: 30px;
+  line-height: 26px;
+  background-color: #141414;
+  border-radius: 15px;
+  text-align: center;
+  color: #363636;
+  font-size: 22px;
+  position: relative;
+  font-weight: 700;
+  font-family: Outfit, Tahoma, Geneva, Verdana, sans-serif;
+  border: 2px solid rgba(201, 172, 142, .29);
+}
+
+
+.lineargradistaked {
+  background-color: rgba(71, 71, 71, 0.8);
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  border-radius: 15px;
+  text-align: center;
+}
+
+.progress {
+  z-index: 2;
+  color: #302f2e !important;
+  text-align: center;
+
+}
+
+.wallet-adapter-dropdown-list {
+  background: #504f4e !important;
+}
+
+li.wallet-adapter-dropdown-list-item:hover {
+  background: #727170 !important;
+}
+
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 20px;
+}
+
+::-webkit-scrollbar-track {
+  background: #4d4c4c;
+  border-radius: 5em;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #85827f;
+  border-radius: 20px;
+}
+
+.footerimage {
+  height: 3em !important;
+}
+
+.footerimgcontainer {
+  gap: 0em;
+  justify-content: center;
+  align-items: center;
+  display: flex;
+  --tw-text-opacity: 1;
+  color: rgb(156 163 175 / var(--tw-text-opacity));
+  margin-top: -7.25rem;
+  margin-bottom: -10rem;
+  margin-left: 1rem;
+}
+
+.w-head {
+  width: 4rem;
+  margin-bottom: 0;
+  margin-top: 0rem;
+}
+.color-black {
+  color: black;
+}
+.w-full {
+  color: rgb(0, 0, 0)
+}
+
+.my-auto {
+  color: rgb(243, 243, 243);
 }

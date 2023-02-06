@@ -20,6 +20,7 @@ import type { StakePoolMetadata } from 'api/mapping'
 import { asWallet } from 'common/Wallets'
 import { useEnvironmentCtx } from 'providers/EnvironmentProvider'
 import { useQuery } from 'react-query'
+import { stakePoolMetadatas } from 'api/mapping'
 
 import { stakePoolDataToV2 } from './useStakePoolData'
 
@@ -72,10 +73,8 @@ export const useAllStakePools = () => {
     | undefined
   >(['useAllStakePools'], async () => {
     const program = rewardsCenterProgram(connection, asWallet(wallet))
-    const [stakePoolsV1, stakePoolsV2] = await Promise.all([
-      getAllStakePools(connection),
-      program.account.stakePool.all(),
-    ])
+    const stakePoolsV1 = await getAllStakePools(connection)
+    const stakePoolsV2 = await program.account.stakePool.all()
     const allStakePoolDatas = [
       ...stakePoolsV1.map((pool) => {
         return {
@@ -90,48 +89,19 @@ export const useAllStakePools = () => {
         }
       }),
     ]
-    const reverseConfigAccountInfos = await getBatchedMultipleAccounts(
-      connection,
-      allStakePoolDatas.map((stakePool) =>
-        findConfigEntryId(
-          Buffer.from('s', 'utf-8'),
-          stakePool.pubkey.toBuffer()
-        )
-      )
-    )
-    const configAccountInfos = await getBatchedMultipleAccounts(
-      connection,
-      reverseConfigAccountInfos.reduce((acc, info) => {
-        if (info) {
-          const configEntry: TypeDef<
-            AllAccountsMap<typeof CONFIGS_IDL>['configEntry'],
-            IdlTypes<typeof CONFIGS_IDL>
-          > = new BorshAccountsCoder(CONFIGS_IDL).decode(
-            'configEntry',
-            info.data
-          )
-          return [...acc, configEntry.extends[0]!]
-        }
-        return [...acc, Keypair.generate().publicKey]
-      }, [] as PublicKey[])
-    )
-
     const [stakePoolsWithMetadata, stakePoolsWithoutMetadata] =
       allStakePoolDatas.reduce(
-        (acc, stakePoolData, index) => {
-          const stakePoolMetadataInfo = configAccountInfos[index]
-          if (stakePoolMetadataInfo) {
-            const configEntry = tryDecodeIdlAccount<
-              'configEntry',
-              typeof CONFIGS_IDL
-            >(stakePoolMetadataInfo, 'configEntry', CONFIGS_IDL)
+        (acc, stakePoolData) => {
+          const stakePoolMetadata = stakePoolMetadatas.find(
+            (md) =>
+              md.stakePoolAddress.toString() === stakePoolData.pubkey.toString()
+          )
+          if (stakePoolMetadata) {
             return [
               [
                 ...acc[0],
                 {
-                  stakePoolMetadata: JSON.parse(
-                    configEntry.parsed!.value
-                  ) as StakePoolMetadata,
+                  stakePoolMetadata,
                   stakePoolData,
                 },
               ],

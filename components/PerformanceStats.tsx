@@ -1,6 +1,4 @@
 import { BN } from '@project-serum/anchor'
-import { AsyncButton } from 'common/Button'
-import { LoadingSpinner } from 'common/LoadingSpinner'
 import {
   formatAmountAsDecimal,
   formatMintNaturalAmountAsDecimal,
@@ -35,28 +33,6 @@ export const PerformanceStats: React.FC<
       } ${className}`}
     >
       <div className="flex flex-row items-center justify-center gap-2">
-        <p className="text-lg text-medium-4">Last claim:</p>
-        {!stakedTokenDatas.data ? (
-          <div className="h-6 w-10 animate-pulse rounded-md bg-border"></div>
-        ) : (
-          <div
-            className="text-center text-lg text-light-1"
-            style={{ color: stakePoolMetadata?.colors?.fontColor }}
-          >
-            {new Date(
-              (stakedTokenDatas.data
-                .map((s) => s.stakeEntry?.parsed?.lastStakedAt.toNumber())
-                .sort()
-                .slice(-1)[0] ?? 0) * 1000
-            ).toLocaleDateString('en-US', {
-              month: 'numeric',
-              day: 'numeric',
-              year: 'numeric',
-              hour: 'numeric',
-              minute: 'numeric',
-            })}
-          </div>
-        )}
       </div>
       <div className="flex flex-row items-center justify-center gap-2">
         <p className="text-lg text-medium-4">
@@ -94,8 +70,8 @@ export const PerformanceStats: React.FC<
               rel="noreferrer"
             >
               {rewardMintInfo.data.tokenListData?.symbol ||
-                rewardMintInfo.data.metaplexMintData?.data.symbol ||
-                '???'}
+                "SQUARE" ||
+                'SQUARE'}
             </a>{' '}
             {rewardDistributorData.data.parsed?.maxRewardSecondsReceived?.eq(
               new BN(1)
@@ -120,40 +96,13 @@ export const PerformanceStats: React.FC<
               Math.min(rewardMintInfo.data.mintInfo.decimals, 6)
             )}{' '}
             {rewardMintInfo.data.tokenListData?.name ||
-              rewardMintInfo.data.metaplexMintData?.data.name ||
+              "SQUARE" ||
               '???'}
           </div>
         )}
       </div>
       <div className="flex items-center justify-center">
-        <AsyncButton
-          onClick={async () =>
-            handleClaimRewards.mutate({
-              tokenDatas: stakedTokenDatas.data ?? [],
-            })
-          }
-          style={{
-            background: stakePoolMetadata?.colors?.secondary,
-            color:
-              stakePoolMetadata?.colors?.fontColorSecondary ||
-              stakePoolMetadata?.colors?.fontColor,
-          }}
-          className="flex items-center gap-2 rounded-md px-4 py-2"
-        >
-          <>
-            {handleClaimRewards.isLoading && (
-              <LoadingSpinner
-                fill={
-                  stakePoolMetadata?.colors?.fontColor
-                    ? stakePoolMetadata?.colors?.fontColor
-                    : '#FFF'
-                }
-                height="20px"
-              />
-            )}
-            <div>Claim</div>
-          </>
-        </AsyncButton>
+        
       </div>
     </div>
   )
