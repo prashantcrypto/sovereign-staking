@@ -115,7 +115,7 @@ export const stakePoolMetadatas: StakePoolMetadata[] = [
 
 ]
 
-export const defaultSecondaryColor = 'rgba(29, 78, 216, 255)'
+export const defaultSecondaryColor = '#46d292'
 
 export const stakePoolsWithHostnames: {
   stakePoolAddress: string
