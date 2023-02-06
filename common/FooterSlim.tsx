@@ -1,4 +1,14 @@
 import { SOCIALS } from './Footer'
+import {  styled } from '@mui/system'
+
+const Custom =styled('span')`
+font-size: 2.25rem;
+font-family: 'Oranienbaum', serif;
+    line-height: 2.5rem;
+    white-space: nowrap;
+    color:rgb(249,181,8)
+
+`
 
 export const FooterSlim = () => {
   return (
@@ -13,7 +23,10 @@ export const FooterSlim = () => {
             href="https://thesovereign.co/"
             className="flex cursor-pointer text-xl font-semibold text-black hover:text-gray-300"
           >
-            <img className="footerimage" src="mainlogo.png" />
+              <style>
+  @import url('https://fonts.googleapis.com/css2?family=Oranienbaum&display=swap');
+</style>
+              <Custom>SOVEREIGN</Custom>
           </a>
         </div>
         <div className="flex gap-4 text-gray-100">
