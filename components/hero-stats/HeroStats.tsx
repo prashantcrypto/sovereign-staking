@@ -53,7 +53,7 @@ export const HeroStats: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
             {totalStaked.data?.toLocaleString()}{' '}
             {stakePoolMetadata?.maxStaked
               ? `/ ${stakePoolMetadata?.maxStaked.toLocaleString()}`
-              : ''}
+              : '/ 1612'}
           </div>
         )}
       </div>
@@ -91,7 +91,7 @@ export const HeroStats: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
               Math.min(rewardMintInfo.data.mintInfo.decimals, 6)
             )}{' '}
             {rewardMintInfo.data.tokenListData?.name ||
-              "SQUARE" ||
+              "SQRE" ||
               '???'}
           </div>
         )}
