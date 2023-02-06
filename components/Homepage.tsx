@@ -18,7 +18,7 @@ function Homepage() {
           content="
           sovereign-staking"
         />
-        <link rel="icon" href={'/mainlogo.ico'} />
+        <link rel="icon" href={'/mainlogo.png'} />
         <script
           defer
           data-domain="stake.cardinal.so"

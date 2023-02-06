@@ -172,39 +172,10 @@ function StakePoolHome(props: { stakePoolMetadataName: string | null }) {
       >
         <HeroLarge />
         <AttributeAnalytics />
-        <div className="flex justify-end">
-          <TabSelector<PANE_OPTIONS>
-            colors={{
-              background: stakePoolMetadata?.colors?.backgroundSecondary,
-              color: stakePoolMetadata?.colors?.secondary,
-            }}
-            defaultOption={paneTabs[0]}
-            options={paneTabs}
-            value={paneTabs.find((p) => p.value === pane)}
-            onChange={(o) => {
-              setPane(o.value)
-            }}
-          />
-        </div>
         {
           {
             dashboard: (
               <div className="flex flex-col gap-4">
-                {!!rewardDistributorData.data &&
-                  !!stakedTokenDatas.data?.length && (
-                    <Info
-                      colorized
-                      icon="performance"
-                      header="Personal Charts"
-                      description="View your recent performance"
-                      style={{ color: stakePoolMetadata?.colors?.fontColor }}
-                      content={
-                        <div className="flex grow items-center justify-end">
-                          <PerformanceStats />
-                        </div>
-                      }
-                    />
-                  )}
                 <StakePoolNotice />
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <UnstakedTokens />
