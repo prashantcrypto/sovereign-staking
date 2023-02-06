@@ -1,5 +1,6 @@
 import { darken, lighten } from 'polished'
 import { FaDiscord, FaGithub, FaMedium, FaTwitter } from 'react-icons/fa'
+import {  styled } from '@mui/system'
 
 import { contrastColorMode } from './utils'
 
@@ -14,6 +15,14 @@ export const SOCIALS = {
   },
 }
 
+const Custom =styled('span')`
+font-size: 2.25rem;
+font-family: 'Oranienbaum', serif;
+    line-height: 2.5rem;
+    white-space: nowrap;
+    color:rgb(249,181,8)
+
+`
 export const Footer = ({
   bgColor = 'rgb(26, 27, 32)',
   accentColor = '#FFFFFF',
@@ -39,7 +48,10 @@ export const Footer = ({
               href="https://thesovereign.co/"
               className="flex cursor-pointer text-xl font-semibold text-black hover:text-gray-300"
             >
-              <img className="footerimage" src="mainlogo.png" />
+              <style>
+  @import url('https://fonts.googleapis.com/css2?family=Oranienbaum&display=swap');
+</style>
+              <Custom>SOVEREIGN</Custom>
             </a>
           </div>
           <div className="flex gap-4 text-gray-100">

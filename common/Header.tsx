@@ -59,6 +59,15 @@ export const WalletAmount = styled('div')`
   justify-content: flex-start;
   gap: 10px;
 `
+const Custom =styled('span')`
+font-size: 2.25rem;
+font-family: 'Oranienbaum', serif;
+    line-height: 2.5rem;
+    white-space: nowrap;
+    color:rgb(249,181,8)
+
+`
+
 export const Header = () => {
   const { environment, secondaryConnection } = useEnvironmentCtx()
   const wallet = useWallet()
@@ -75,10 +84,13 @@ export const Header = () => {
           <div className="z-50 -mt-1 flex items-center gap-3">
             <a
               target="_blank"
-              href="https://magiceden.io/marketplace/SovereignNFT"
+              href="https://magiceden.io/marketplace/sovereign"
               className="flex cursor-pointer text-xl font-semibold text-black hover:text-gray-300"
             >
-              <img className=" g:w-80 w-head" src="mainlogo.png" />
+             <style>
+  @import url('https://fonts.googleapis.com/css2?family=Oranienbaum&display=swap');
+</style>
+              <Custom>SOVEREIGN</Custom>
             </a>
             {environment.label !== 'mainnet-beta' && (
               <div className="cursor-pointer rounded-md bg-[#9945ff] p-1 text-[10px] italic text-black">
