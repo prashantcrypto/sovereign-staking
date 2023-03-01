@@ -95,51 +95,6 @@ export const UnstakedTokens = () => {
       </div>
 
       <div className="mt-2 flex flex-col items-center justify-between gap-5 md:flex-row">
-        {!stakePoolMetadata?.receiptType &&
-        stakePoolData?.parsed &&
-        !isStakePoolV2(stakePoolData?.parsed) ? (
-          <Tooltip
-            title={
-              receiptType === ReceiptType.Original
-                ? 'Lock the original token(s) in your wallet when you stake'
-                : 'Receive a dynamically generated NFT receipt representing your stake'
-            }
-          >
-            <div className="flex cursor-pointer flex-row gap-2">
-              <Toggle
-                defaultValue={receiptType === ReceiptType.Original}
-                onChange={() =>
-                  setReceiptType(
-                    receiptType === ReceiptType.Original
-                      ? ReceiptType.Receipt
-                      : ReceiptType.Original
-                  )
-                }
-                style={{
-                  background:
-                    stakePoolMetadata?.colors?.secondary ||
-                    defaultSecondaryColor,
-                  color: stakePoolMetadata?.colors?.fontColor,
-                }}
-                className={`relative inline-flex h-6 w-11 items-center rounded-full`}
-              />
-              <div className="flex items-center gap-1">
-                <span
-                  style={{
-                    color: stakePoolMetadata?.colors?.fontColor,
-                  }}
-                >
-                  {receiptType === ReceiptType.Original
-                    ? 'Original'
-                    : 'Receipt'}
-                </span>
-                <FaInfoCircle />
-              </div>
-            </div>
-          </Tooltip>
-        ) : (
-          <></>
-        )}
         <div className="flex gap-5">
           <Tooltip title="Click on tokens to select them">
             <button
