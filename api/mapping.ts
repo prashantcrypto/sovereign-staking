@@ -1,6 +1,5 @@
-import { ReceiptType } from '@cardinal/staking/dist/cjs/programs/stakePool'
-import { PublicKey } from '@solana/web3.js'
-import { CSSProperties } from 'react'
+import type { ReceiptType } from '@cardinal/staking/dist/cjs/programs/stakePool'
+import type { CSSProperties } from 'react'
 
 import type { AirdropMetadata } from '../common/Airdrop'
 
@@ -33,7 +32,7 @@ export type StakePoolMetadata = {
   // Whether or not to show name in header, defaults false
   nameInHeader?: boolean
   // Publickey for this stake pool
-  stakePoolAddress: PublicKey
+  stakePoolAddress: string
   // Description for this stake pool
   description?: string
   // Default receipt type. Setting this will remove the option for the user to choose which receipt type to use
@@ -87,42 +86,11 @@ export type StakePoolMetadata = {
   // Analytics to show at the top of stake pool. supports trait based analytics and overall tokens data
   analytics?: Analytic[]
 }
-export const stakePoolMetadatas: StakePoolMetadata[] = [
 
-  {
-    name: 'sovereignstake',
-    displayName: 'Stake your Sovereign NFT',
-    stakePoolAddress: new PublicKey(
-      '3Fe9eqtbShW2n2YbpoVNSvceKS7MuhgqUmodWnJXzoe6'
-    ),
-    websiteUrl: 'https://thesovereign.co/',
-    receiptType: ReceiptType.Original,
-    maxStaked: 1400,
-    imageUrl:
-      'mainlogo.png',
-    styles: {
-      fontFamily: 'fot-udmincho-pr6n, serif',
-      fontWeight: 700,
-    },
-    colors: {
-      primary: 'transparent',
-      secondary: 'rgb(255, 255, 255)',
-      accent: '#FFFFFF',
-      fontColor: '#FFFFFF',
-
-    },
-  },
-
-]
-
-export const defaultSecondaryColor = '#46d292'
+export const defaultSecondaryColor = 'grey'
 
 export const stakePoolsWithHostnames: {
   stakePoolAddress: string
   hostname: string
 }[] = [
-  {
-      stakePoolAddress: '3Fe9eqtbShW2n2YbpoVNSvceKS7MuhgqUmodWnJXzoe6',
-      hostname: 'https://thesovereign.co/',
-    }]
-
+]

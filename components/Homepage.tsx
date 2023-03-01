@@ -1,42 +1,51 @@
-import { Banner } from 'common/Banner'
+import styled from '@emotion/styled'
 import { FooterSlim } from 'common/FooterSlim'
-import { useAllStakePools } from 'hooks/useAllStakePools'
 import Head from 'next/head'
+import Link from 'next/link';
 
-import { CollectionsView } from './CollectionsView'
 
+const CollectionView=styled.div`
+width:fit-content;
+height:fit-content;
+border-radius:0.7em;
+margin:auto;
+border:5px solid white;
+img{
+  margin:1em;
+  border:3px solid white;
+  border-radius:50px;
+  padding:0.6em;
+}
+h1{
+  text-align:center;
+  font-size:2em;
+  margin:0.5em 0em;
+  font-weight:bold;
+  text-tranform:capitalize;
+}
+`
 function Homepage() {
-  const allStakePools = useAllStakePools()
 
   return (
     <div className="bg-dark-5">
       <Head>
-        <title>Sovereign stake</title>
-        <meta name="title" content="sovereign stake" />
+        <title>SOVEREIGN NFT STAKING</title>
+        <meta name="title" content="SOVEREIGN NFT STAKING" />
         <meta
           name="description"
-          content="
-          sovereign-staking"
+          content="Stake your SOVEREIGN NFT To get $SQRE "
         />
         <link rel="icon" href={'/mainlogo.png'} />
-        <script
-          defer
-          data-domain="stake.cardinal.so"
-          src="https://plausible.io/js/plausible.js"
-        ></script>
       </Head>
 
-      <Banner />
-      <div className="mx-auto flex flex-col gap-16 px-8 md:px-16">
-        <CollectionsView
-          configs={allStakePools.data?.stakePoolsWithMetadata.filter(
-            (pool) =>
-              !(
-                pool.stakePoolMetadata?.hidden ||
-                pool.stakePoolMetadata?.notFound
-              )
-          )}
-        />
+      <div className="mx-auto flex flex-row gap-16 px-8 md:px-16 my-5">
+      <Link href="/sovereignstake">
+
+        <CollectionView>
+        <img src="./mainlogo.png" alt="" />
+        <h1>STAKE SOVEREIGN NFT</h1>
+        </CollectionView>
+      </Link>
       </div>
       <FooterSlim />
     </div>

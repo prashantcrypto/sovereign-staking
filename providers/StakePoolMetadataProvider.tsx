@@ -1,10 +1,10 @@
+import type { UseQueryResult } from '@tanstack/react-query'
 import type { StakePoolMetadata } from 'api/mapping'
 import { useStakePoolMetadata } from 'hooks/useStakePoolMetadata'
 import React, { useContext } from 'react'
-import type { UseQueryResult } from 'react-query'
 
 export interface StakePoolMetadataValues {
-  stakePoolMetadata: UseQueryResult<StakePoolMetadata | undefined>
+  stakePoolMetadata: UseQueryResult<StakePoolMetadata | undefined | null>
 }
 
 const StakePoolMetadataContext: React.Context<null | StakePoolMetadataValues> =
@@ -27,7 +27,7 @@ export function StakePoolMetadataProvider({
 }
 
 export function useStakePoolMetadataCtx(): UseQueryResult<
-  StakePoolMetadata | undefined
+  StakePoolMetadata | undefined | null
 > {
   const context = useContext(StakePoolMetadataContext)
   if (!context) {

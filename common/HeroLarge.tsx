@@ -2,15 +2,16 @@ import { shortPubKey } from '@cardinal/namespaces-components'
 import { css } from '@emotion/react'
 import { StakePoolConfig } from 'components/StakePoolConfig'
 import { useStakePoolId } from 'hooks/useStakePoolId'
-import { useStakePoolMetadata } from 'hooks/useStakePoolMetadata'
+import { useStakePoolMetadataCtx } from 'providers/StakePoolMetadataProvider'
 
+import { FeeInfo } from '@/components/fee-info/FeeInfo'
 import { StakePoolImage } from '@/components/StakePoolImage'
 
 import { HeroStats } from '../components/hero-stats/HeroStats'
 
 export const HeroLarge: React.FC = () => {
-  const stakePoolId = useStakePoolId()
-  const { data: config } = useStakePoolMetadata()
+  const { data: stakePoolId } = useStakePoolId()
+  const { data: config } = useStakePoolMetadataCtx()
   return (
     <div className="relative flex w-full flex-wrap items-stretch justify-center gap-8 py-8 lg:flex-nowrap lg:justify-between lg:gap-24">
       <div
@@ -25,11 +26,7 @@ export const HeroLarge: React.FC = () => {
           background-color: ${config?.colors?.accent};
         `}
       />
-      <div className="flex w-3/4 grow-[2] flex-col pt-4">
-        <div className="mb-6 flex flex-col gap-6">
-        </div>
         <HeroStats />
-      </div>
     </div>
   )
 }

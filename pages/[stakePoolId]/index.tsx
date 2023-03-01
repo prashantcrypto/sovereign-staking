@@ -3,11 +3,8 @@ import { FooterSlim } from 'common/FooterSlim'
 import { Header } from 'common/Header'
 import { HeroLarge } from 'common/HeroLarge'
 import { contrastColorMode } from 'common/utils'
-import { AttributeAnalytics } from 'components/AttributeAnalytics'
 import { StakePoolLeaderboard } from 'components/StakePoolLeaderboard'
 import { StakePoolNotice } from 'components/StakePoolNotice'
-import { useRewardDistributorData } from 'hooks/useRewardDistributorData'
-import { useStakedTokenDatas } from 'hooks/useStakedTokenDatas'
 import { useStakePoolData } from 'hooks/useStakePoolData'
 import { useUserRegion } from 'hooks/useUserRegion'
 import Head from 'next/head'
@@ -41,12 +38,10 @@ function StakePoolHome(props: { stakePoolMetadataName: string | null }) {
   const router = useRouter()
   const { isFetched: stakePoolLoaded } = useStakePoolData()
   const userRegion = useUserRegion()
-  const rewardDistributorData = useRewardDistributorData()
-  const stakedTokenDatas = useStakedTokenDatas()
   const [pane, setPane] = useState<PANE_OPTIONS>('dashboard')
   const stakePoolDisplayName = props.stakePoolMetadataName
     ? props.stakePoolMetadataName.replace(' Staking', '') + ' Staking'
-    : 'Cardinal NFT Staking'
+    : 'SOVEREIGN NFT Staking'
 
   const { data: stakePoolMetadata } = useStakePoolMetadataCtx()
 
@@ -57,7 +52,9 @@ function StakePoolHome(props: { stakePoolMetadataName: string | null }) {
 
   if (
     !stakePoolLoaded ||
-    (stakePoolMetadata?.disallowRegions && !userRegion.isFetched)
+    (stakePoolMetadata?.disallowRegions?.length &&
+      stakePoolMetadata?.disallowRegions.length > 0 &&
+      !userRegion.isFetched)
   ) {
     return (
       <>
@@ -74,20 +71,6 @@ function StakePoolHome(props: { stakePoolMetadataName: string | null }) {
                 : 'Stake your Solana NFTs powered by Cardinal Staking'
             }
           />
-          <meta name="image" content="https://stake.cardinal.so/preview.png" />
-          <meta
-            name="og:image"
-            content="https://stake.cardinal.so/preview.png"
-          />
-          <link
-            rel="icon"
-            href={stakePoolMetadata?.imageUrl ?? `/favicon.ico`}
-          />
-          <script
-            defer
-            data-domain="stake.cardinal.so"
-            src="https://plausible.io/js/plausible.js"
-          ></script>
         </Head>
       </>
     )
@@ -95,6 +78,7 @@ function StakePoolHome(props: { stakePoolMetadataName: string | null }) {
 
   if (
     stakePoolMetadata?.disallowRegions &&
+    stakePoolMetadata?.disallowRegions.length > 0 &&
     !userRegion.data?.isAllowed &&
     !process.env.BYPASS_REGION_CHECK
   ) {
@@ -128,15 +112,9 @@ function StakePoolHome(props: { stakePoolMetadataName: string | null }) {
   }
 
   return (
-    <div
-      style={{
-        background: stakePoolMetadata?.colors?.primary,
-        backgroundSize: 'cover',
-        backgroundImage: `url(${stakePoolMetadata?.backgroundImage})`,
-      }}
-    >
+    <div>
       <Head>
-        <title>Sovereign Stake</title>
+        <title>{stakePoolDisplayName}</title>
         <meta name="title" content={stakePoolDisplayName} />
         <meta
           name="description"
@@ -148,12 +126,6 @@ function StakePoolHome(props: { stakePoolMetadataName: string | null }) {
               : 'Stake your Solana NFTs powered by Cardinal Staking'
           }
         />
-        <link rel="icon" href={stakePoolMetadata?.imageUrl ?? `/mainlogo.png`} />
-        <script
-          defer
-          data-domain="stake.cardinal.so"
-          src="https://plausible.io/js/plausible.js"
-        ></script>
       </Head>
       <Header />
       <div
@@ -168,7 +140,6 @@ function StakePoolHome(props: { stakePoolMetadataName: string | null }) {
         }}
       >
         <HeroLarge />
-        <AttributeAnalytics />
         {
           {
             dashboard: (

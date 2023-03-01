@@ -5,7 +5,7 @@ import { useAllowedTokenDatas } from 'hooks/useAllowedTokenDatas'
 import { isStakePoolV2, useStakePoolData } from 'hooks/useStakePoolData'
 import { useStakePoolMetadataCtx } from 'providers/StakePoolMetadataProvider'
 import { useState } from 'react'
-import type { UseMutationResult } from 'react-query'
+import type { UseMutationResult } from '@tanstack/react-query'
 
 import { DEFAULT_PAGE, PAGE_SIZE } from '@/components/token-staking/constants'
 import { TokenListEmptyState } from '@/components/token-staking/token-list/TokenListEmptyState'
@@ -19,7 +19,7 @@ export type UnstakedTokensProps = {
   unstakedSelected: AllowedTokenData[]
   setUnstakedSelected: (unstakedSelected: AllowedTokenData[]) => void
   handleStake: UseMutationResult<
-    string[],
+    (string | null)[][],
     unknown,
     {
       tokenDatas: AllowedTokenData[]

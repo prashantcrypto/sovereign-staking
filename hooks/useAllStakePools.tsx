@@ -7,20 +7,13 @@ import { findConfigEntryId } from '@cardinal/configs/dist/cjs/programs/pda'
 import type { IdlAccountData } from '@cardinal/rewards-center'
 import { rewardsCenterProgram } from '@cardinal/rewards-center'
 import { getAllStakePools } from '@cardinal/staking/dist/cjs/programs/stakePool/accounts'
-import type { IdlTypes } from '@coral-xyz/anchor'
-import { BorshAccountsCoder } from '@project-serum/anchor'
-import type {
-  AllAccountsMap,
-  TypeDef,
-} from '@project-serum/anchor/dist/cjs/program/namespace/types'
 import { useWallet } from '@solana/wallet-adapter-react'
 import type { PublicKey } from '@solana/web3.js'
 import { Keypair } from '@solana/web3.js'
+import { useQuery } from '@tanstack/react-query'
 import type { StakePoolMetadata } from 'api/mapping'
 import { asWallet } from 'common/Wallets'
 import { useEnvironmentCtx } from 'providers/EnvironmentProvider'
-import { useQuery } from 'react-query'
-import { stakePoolMetadatas } from 'api/mapping'
 
 import { stakePoolDataToV2 } from './useStakePoolData'
 
@@ -73,8 +66,10 @@ export const useAllStakePools = () => {
     | undefined
   >(['useAllStakePools'], async () => {
     const program = rewardsCenterProgram(connection, asWallet(wallet))
-    const stakePoolsV1 = await getAllStakePools(connection)
-    const stakePoolsV2 = await program.account.stakePool.all()
+    const [stakePoolsV1, stakePoolsV2] = await Promise.all([
+      getAllStakePools(connection),
+      program.account.stakePool.all(),
+    ])
     const allStakePoolDatas = [
       ...stakePoolsV1.map((pool) => {
         return {
@@ -89,24 +84,59 @@ export const useAllStakePools = () => {
         }
       }),
     ]
+    const reverseConfigAccountInfos = await getBatchedMultipleAccounts(
+      connection,
+      allStakePoolDatas.map((stakePool) =>
+        findConfigEntryId(
+          Buffer.from('s', 'utf-8'),
+          stakePool.pubkey.toBuffer()
+        )
+      )
+    )
+    const configAccountInfos = await getBatchedMultipleAccounts(
+      connection,
+      reverseConfigAccountInfos.reduce((acc, info) => {
+        if (info) {
+          const configEntry = tryDecodeIdlAccount<
+            'configEntry',
+            typeof CONFIGS_IDL
+          >(info, 'configEntry', CONFIGS_IDL)
+          if (configEntry?.parsed?.extends) {
+            return [...acc, configEntry.parsed.extends[0]!]
+          } else {
+            return acc
+          }
+        }
+        return [...acc, Keypair.generate().publicKey]
+      }, [] as PublicKey[])
+    )
+
     const [stakePoolsWithMetadata, stakePoolsWithoutMetadata] =
       allStakePoolDatas.reduce(
-        (acc, stakePoolData) => {
-          const stakePoolMetadata = stakePoolMetadatas.find(
-            (md) =>
-              md.stakePoolAddress.toString() === stakePoolData.pubkey.toString()
-          )
-          if (stakePoolMetadata) {
-            return [
-              [
-                ...acc[0],
-                {
-                  stakePoolMetadata,
-                  stakePoolData,
-                },
-              ],
-              acc[1],
-            ]
+        (acc, stakePoolData, index) => {
+          const stakePoolMetadataInfo = configAccountInfos[index]
+          if (stakePoolMetadataInfo) {
+            try {
+              const configEntry = tryDecodeIdlAccount<
+                'configEntry',
+                typeof CONFIGS_IDL
+              >(stakePoolMetadataInfo, 'configEntry', CONFIGS_IDL)
+              const stakePoolMetadata = JSON.parse(
+                configEntry.parsed!.value
+              ) as StakePoolMetadata
+              return [
+                [
+                  ...acc[0],
+                  {
+                    stakePoolMetadata,
+                    stakePoolData,
+                  },
+                ],
+                acc[1],
+              ]
+            } catch (e) {
+              console.log(e, stakePoolData, stakePoolData.pubkey.toString())
+            }
           }
           return [
             acc[0],

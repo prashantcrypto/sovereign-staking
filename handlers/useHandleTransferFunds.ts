@@ -5,15 +5,16 @@ import {
 } from '@cardinal/common'
 import {
   createTransferCheckedInstruction,
+  getAssociatedTokenAddressSync,
   NATIVE_MINT,
 } from '@solana/spl-token'
 import { useWallet } from '@solana/wallet-adapter-react'
 import { Transaction } from '@solana/web3.js'
+import { useMutation } from '@tanstack/react-query'
 import { notify } from 'common/Notification'
 import { asWallet } from 'common/Wallets'
 import { useRewardDistributorData } from 'hooks/useRewardDistributorData'
 import { useRewardMintInfo } from 'hooks/useRewardMintInfo'
-import { useMutation } from 'react-query'
 
 import { useStakePoolData } from '../hooks/useStakePoolData'
 import { useEnvironmentCtx } from '../providers/EnvironmentProvider'
@@ -45,11 +46,8 @@ export const useHandleTransferFunds = () => {
       ) {
         await withWrapSol(transaction, connection, wallet, transferAmount)
       }
-      const ownerAtaId = await withFindOrInitAssociatedTokenAccount(
-        transaction,
-        connection,
+      const ownerAtaId = getAssociatedTokenAddressSync(
         rewardDistributor.data.parsed?.rewardMint,
-        wallet.publicKey,
         wallet.publicKey,
         true
       )

@@ -1,13 +1,19 @@
-import { withFindOrInitAssociatedTokenAccount } from '@cardinal/common'
+import { executeTransactionSequence, logError, tryNull } from '@cardinal/common'
 import { unstake as unstakeV2 } from '@cardinal/rewards-center'
-import { unstake } from '@cardinal/staking'
+import { unstakeAll } from '@cardinal/staking'
+import type { Account } from '@solana/spl-token'
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  getAccount,
+  getAssociatedTokenAddressSync,
+} from '@solana/spl-token'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Transaction } from '@solana/web3.js'
-import { executeAllTransactions } from 'api/utils'
+import type { PublicKey, Signer, Transaction } from '@solana/web3.js'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { BN } from 'bn.js'
 import { notify } from 'common/Notification'
 import { asWallet } from 'common/Wallets'
 import type { StakeEntryTokenData } from 'hooks/useStakedTokenDatas'
-import { useMutation, useQueryClient } from 'react-query'
 
 import { TOKEN_DATAS_KEY } from '../hooks/useAllowedTokenDatas'
 import { useRewardDistributorData } from '../hooks/useRewardDistributorData'
@@ -28,109 +34,109 @@ export const useHandleUnstake = (callback?: () => void) => {
       tokenDatas,
     }: {
       tokenDatas: StakeEntryTokenData[]
-    }): Promise<string[]> => {
+    }): Promise<[(string | null)[][], number]> => {
       if (!stakePoolId) throw 'Stake pool not found'
       if (!wallet.publicKey) throw 'Wallet not connected'
       if (!stakePool || !stakePool.parsed) throw 'Stake pool not found'
 
-      const ataTx = new Transaction()
-      if (rewardDistributorData.data && rewardDistributorData.data.parsed) {
-        // create user reward mint ata
-        await withFindOrInitAssociatedTokenAccount(
-          ataTx,
+      let txs: { tx: Transaction; signers?: Signer[] }[][] = []
+      const cooldownTokens = tokenDatas.filter((token) => {
+        return (
+          stakePool.parsed?.cooldownSeconds &&
+          !token.stakeEntry?.parsed?.cooldownStartSeconds &&
+          !stakePool.parsed.minStakeSeconds
+        )
+      })
+
+      if (isStakePoolV2(stakePool.parsed!)) {
+        // TODO Handle fungible
+        const unstakeTxs = await unstakeV2(
           connection,
-          rewardDistributorData.data.parsed.rewardMint,
-          wallet.publicKey,
-          wallet.publicKey
+          wallet,
+          stakePool.parsed?.identifier,
+          tokenDatas.map((token) => ({
+            mintId: token.stakeEntry!.parsed.stakeMint,
+            fungible: token.stakeEntry?.parsed.amount.gt(new BN(1)),
+          })),
+          rewardDistributorData.data
+            ? [rewardDistributorData.data?.pubkey]
+            : undefined
         )
-      }
 
-      let coolDown = false
-      const txs: Transaction[] = (
-        await Promise.all(
-          tokenDatas.map(async (token, i) => {
-            try {
-              if (!token || !token.stakeEntry) {
-                throw new Error('No stake entry for token')
-              }
-              if (
-                stakePool.parsed?.cooldownSeconds &&
-                !token.stakeEntry?.parsed?.cooldownStartSeconds &&
-                !stakePool.parsed.minStakeSeconds
-              ) {
-                notify({
-                  message: `Cooldown period will be initiated for ${token.metaplexData?.data.data.name}`,
-                  description: 'Unless minimum stake period unsatisfied',
-                  type: 'info',
-                })
-                coolDown = true
-              }
-              const transaction = new Transaction()
-              if (i === 0 && ataTx.instructions.length > 0) {
-                transaction.instructions = ataTx.instructions
-              }
-              let unstakeTx = new Transaction()
-              if (!token.stakeEntry.parsed?.stakeMint)
-                throw 'No stake mint found for stake entry'
-              if (isStakePoolV2(stakePool.parsed!)) {
-                if (!stakePool.parsed) throw 'No stake pool parsed data'
-                const txs = await unstakeV2(
-                  connection,
-                  wallet,
-                  stakePool.parsed?.identifier,
-                  [{ mintId: token.stakeEntry.parsed?.stakeMint }],
-                  rewardDistributorData.data
-                    ? [rewardDistributorData.data?.pubkey]
-                    : undefined
-                ) // TODO Handle fungible
-                if (txs[0]) {
-                  unstakeTx = txs[0]
-                }
-              } else {
-                unstakeTx = await unstake(connection, wallet, {
-                  stakePoolId: stakePoolId,
-                  originalMintId: token.stakeEntry.parsed?.stakeMint,
-                  skipRewardMintTokenAccount: true,
-                })
-              }
-              transaction.instructions = [
-                ...transaction.instructions,
-                ...unstakeTx.instructions,
+        // create ata if not exists in first tx and execute first
+        let rewardTokenAccount: Account | null = null
+        let userRewardTokenAccountId: PublicKey | null = null
+        if (rewardDistributorData.data?.parsed) {
+          userRewardTokenAccountId = getAssociatedTokenAddressSync(
+            rewardDistributorData.data.parsed.rewardMint,
+            wallet.publicKey
+          )
+          rewardTokenAccount = await tryNull(
+            getAccount(connection, userRewardTokenAccountId)
+          )
+        }
+        txs =
+          rewardDistributorData.data?.parsed &&
+          userRewardTokenAccountId &&
+          !rewardTokenAccount
+            ? [
+                unstakeTxs.slice(0, 1).map((tx) => {
+                  if (userRewardTokenAccountId && rewardDistributorData.data) {
+                    tx.instructions = [
+                      createAssociatedTokenAccountIdempotentInstruction(
+                        wallet.publicKey,
+                        userRewardTokenAccountId,
+                        wallet.publicKey,
+                        rewardDistributorData.data?.parsed.rewardMint
+                      ),
+                      ...tx.instructions,
+                    ]
+                  }
+                  return { tx }
+                }),
+                unstakeTxs.slice(1).map((tx) => ({ tx })),
               ]
-              return transaction
-            } catch (e) {
-              notify({
-                message: `${e}`,
-                description: `Failed to unstake token ${token?.stakeEntry?.pubkey.toString()}`,
-                type: 'error',
-              })
-              return null
-            }
+            : [unstakeTxs.map((tx) => ({ tx }))]
+      } else {
+        // ata creation handled inside of transaction sequence
+        txs = await unstakeAll(connection, wallet, {
+          stakePoolId,
+          mintInfos: tokenDatas.map((token) => ({
+            mintId: token.stakeEntry!.parsed.stakeMint,
+            stakeEntryId: token.stakeEntry?.pubkey,
+            fungible: token.stakeEntry?.parsed.amount.gt(new BN(1)),
+          })),
+        })
+      }
+      const txids = await executeTransactionSequence(connection, txs, wallet, {
+        errorHandler: (e, { count }) => {
+          notify({
+            message: `Failed to stake ${count}/${txs.flat().length}`,
+            description: `Please try again later`,
           })
-        )
-      ).filter((x): x is Transaction => x !== null)
-
-      const [firstTx, ...remainingTxs] = txs
-      await executeAllTransactions(
-        connection,
-        wallet,
-        ataTx.instructions.length > 0 ? remainingTxs : txs,
-        {
-          notificationConfig: {
-            message: `Successfully ${
-              coolDown ? 'initiated cooldown' : 'unstaked'
-            }`,
-            description: 'These tokens are now available in your wallet',
-          },
+          logError(e)
+          return null
         },
-        ataTx.instructions.length > 0 ? firstTx : undefined
-      )
-      return []
+      })
+      return [txids, cooldownTokens.length]
     },
     {
-      onSuccess: () => {
-        queryClient.resetQueries([TOKEN_DATAS_KEY])
-        if (callback) callback()
+      onSuccess: ([txids, cooldownTokens]) => {
+        const filteredTxids = txids.flat().filter((x): x is string => !!x)
+        if (filteredTxids.length !== 0) {
+          notify({
+            message: `Successfully ${
+              cooldownTokens > 0
+                ? `initiated cooldown for ${cooldownTokens} tokens and`
+                : ''
+            } unstaked ${filteredTxids.length - cooldownTokens}/${
+              txids.flat().length - cooldownTokens
+            }`,
+            description: 'Stake progress will now dynamically update',
+          })
+          queryClient.resetQueries([TOKEN_DATAS_KEY])
+          if (callback) callback
+        }
       },
       onError: (e) => {
         notify({ message: 'Failed to unstake', description: `${e}` })

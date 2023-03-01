@@ -1,15 +1,18 @@
+import { ReceiptType } from '@cardinal/staking/dist/cjs/programs/stakePool'
 import type { StakePoolMetadata } from 'api/mapping'
 import { TokenStandard } from 'api/mapping'
 import { AsyncButton } from 'common/Button'
 import { FormFieldTitleInput } from 'common/FormFieldInput'
 import { LoadingSpinner } from 'common/LoadingSpinner'
 import { SelectorBoolean } from 'common/SelectorBoolean'
+import { Tooltip } from 'common/Tooltip'
 import { useFormik } from 'formik'
 import { useHandlePoolConfig } from 'handlers/useHandlePoolConfig'
 import { useStakePoolData } from 'hooks/useStakePoolData'
 import { useStakePoolId } from 'hooks/useStakePoolId'
 import { useStakePoolMetadataCtx } from 'providers/StakePoolMetadataProvider'
 import { HexColorPicker } from 'react-colorful'
+import { BsFillInfoCircleFill } from 'react-icons/bs'
 import validateColor from 'validate-color'
 import * as Yup from 'yup'
 
@@ -251,6 +254,8 @@ export const AdvancedConfigForm = () => {
           description={'Whether or not to show name in header'}
         />
         <SelectorBoolean
+          defaultChecked={values.nameInHeader}
+          value={values.nameInHeader}
           handleChange={(v) => setFieldValue('nameInHeader', v)}
         />
       </div>
@@ -292,12 +297,57 @@ export const AdvancedConfigForm = () => {
       </div>
       <div>
         <FormFieldTitleInput
+          title={'Stake Receipts'}
+          description={
+            'Receive stake receipts when staking. Using original enables non-custodial staked, `Receipt` creates a new mint that represents the staked token and `None` stakes tokens custodial. Original is default and recommended unless your tokens have no freeze authority or you want custom staking image overlay.'
+          }
+        />
+        <SelectInput
+          className="w-full"
+          value={String(values.receiptType) || ''}
+          setValue={(v) => setFieldValue('receiptType', v)}
+          options={[
+            { label: 'Original', value: String(ReceiptType.Original) },
+            { label: 'Receipt', value: String(ReceiptType.Receipt) },
+            { label: 'None', value: String(ReceiptType.None) },
+          ]}
+        />
+      </div>
+      <div>
+        <FormFieldTitleInput
           title={'Not found'}
           description={'Optional config to disable finding this pool'}
         />
-        <SelectorBoolean handleChange={(v) => setFieldValue('notFound', v)} />
+        <SelectorBoolean
+          defaultChecked={values.notFound}
+          value={values.notFound}
+          handleChange={(v) => setFieldValue('notFound', v)}
+        />
       </div>
       <div>
+        <FormFieldTitleInput
+          title={
+            <div className="flex items-center">
+              <div>Hostname</div>
+              <Tooltip
+                title={
+                  <div>
+                    Set the following record on your DNS provider:
+                    <br />
+                    <br />
+                    Type NAME CNAME <br />
+                    CNAME [your subdomain] cname.vercel-dns.com
+                  </div>
+                }
+              >
+                <div className="ml-2 flex cursor-pointer flex-row items-center justify-center gap-2">
+                  <BsFillInfoCircleFill className="text-medium-3" />
+                </div>
+              </Tooltip>
+            </div>
+          }
+          description={'Optional hostname to remap'}
+        />
         <TextInput
           disabled={false}
           hasError={
@@ -315,7 +365,11 @@ export const AdvancedConfigForm = () => {
           title={'Hide footer'}
           description={'Optional config to disable finding this pool'}
         />
-        <SelectorBoolean handleChange={(v) => setFieldValue('notFound', v)} />
+        <SelectorBoolean
+          defaultChecked={values.hideFooter}
+          value={values.hideFooter}
+          handleChange={(v) => setFieldValue('hideFooter', v)}
+        />
       </div>
       <div>
         <FormFieldTitleInput
@@ -342,6 +396,8 @@ export const AdvancedConfigForm = () => {
           description={'Whether or not to contrast the background'}
         />
         <SelectorBoolean
+          defaultChecked={values.contrastHomepageBkg}
+          value={values.contrastHomepageBkg}
           handleChange={(v) => setFieldValue('contrastHomepageBkg', v)}
         />
       </div>
@@ -383,6 +439,8 @@ export const AdvancedConfigForm = () => {
             description={'If the logo should be displayed with paddding'}
           />
           <SelectorBoolean
+            defaultChecked={values.logoPadding}
+            value={values.logoPadding}
             handleChange={(v) => setFieldValue('logoPadding', v)}
           />
         </div>

@@ -44,10 +44,7 @@ export const RewardsRate = () => {
             )}
             rel="noreferrer"
           >
-            {rewardMintInfo.data.tokenListData?.symbol ||
-              "SQRE" ||
-              '???'}
-          </a>{' '}
+SQRE          </a>{' '}
           {rewardDistributorData.data.parsed?.maxRewardSecondsReceived?.eq(
             new BN(1)
           )

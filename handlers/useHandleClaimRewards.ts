@@ -1,14 +1,18 @@
-import { withFindOrInitAssociatedTokenAccount } from '@cardinal/common'
+import { executeTransactionSequence, logError, tryNull } from '@cardinal/common'
 import { claimRewards as claimRewardsV2 } from '@cardinal/rewards-center'
-import { claimRewards } from '@cardinal/staking'
+import { claimRewardsAll } from '@cardinal/staking'
+import {
+  createAssociatedTokenAccountIdempotentInstruction,
+  getAccount,
+  getAssociatedTokenAddressSync,
+} from '@solana/spl-token'
 import { useWallet } from '@solana/wallet-adapter-react'
-import { Transaction } from '@solana/web3.js'
-import { executeAllTransactions } from 'api/utils'
+import type { Transaction } from '@solana/web3.js'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { notify } from 'common/Notification'
 import { asWallet } from 'common/Wallets'
 import { TOKEN_DATAS_KEY } from 'hooks/useAllowedTokenDatas'
 import type { StakeEntryTokenData } from 'hooks/useStakedTokenDatas'
-import { useMutation, useQueryClient } from 'react-query'
 
 import {
   isRewardDistributorV2,
@@ -31,96 +35,81 @@ export const useHandleClaimRewards = () => {
       tokenDatas,
     }: {
       tokenDatas: StakeEntryTokenData[]
-    }): Promise<void> => {
+    }): Promise<(string | null)[][]> => {
       if (!wallet) throw 'Wallet not found'
       if (!stakePool || !stakePool.parsed) throw 'No stake pool found'
       if (!rewardDistributorData.data?.parsed)
         throw 'No reward distributor data found'
 
-      const ataTx = new Transaction()
-      if (rewardDistributorData.data && rewardDistributorData.data.parsed) {
-        // create user reward mint ata
-        await withFindOrInitAssociatedTokenAccount(
-          ataTx,
+      let txs: { tx: Transaction }[][] = []
+      if (isRewardDistributorV2(rewardDistributorData.data!.parsed!)) {
+        const claimTxs = await claimRewardsV2(
           connection,
-          rewardDistributorData.data.parsed.rewardMint,
-          wallet.publicKey!,
-          wallet.publicKey!
+          wallet,
+          stakePool.parsed!.identifier,
+          tokenDatas.map((token) => ({
+            mintId: token.stakeEntry!.parsed.stakeMint,
+          })),
+          rewardDistributorData.data ? [rewardDistributorData.data.pubkey] : []
         )
+
+        // create ata if not exists in first tx and execute first
+        const userRewardTokenAccountId = getAssociatedTokenAddressSync(
+          rewardDistributorData.data.parsed.rewardMint,
+          wallet.publicKey
+        )
+        const rewardTokenAccount = await tryNull(
+          getAccount(connection, userRewardTokenAccountId)
+        )
+        txs =
+          rewardDistributorData.data?.parsed &&
+          userRewardTokenAccountId &&
+          !rewardTokenAccount
+            ? [
+                claimTxs.slice(0, 1).map((tx) => {
+                  if (userRewardTokenAccountId && rewardDistributorData.data) {
+                    tx.instructions = [
+                      createAssociatedTokenAccountIdempotentInstruction(
+                        wallet.publicKey,
+                        userRewardTokenAccountId,
+                        wallet.publicKey,
+                        rewardDistributorData.data?.parsed.rewardMint
+                      ),
+                      ...tx.instructions,
+                    ]
+                  }
+                  return { tx }
+                }),
+                claimTxs.slice(1).map((tx) => ({ tx })),
+              ]
+            : [claimTxs.map((tx) => ({ tx }))]
+      } else {
+        txs = await claimRewardsAll(connection, wallet, {
+          stakePoolId: stakePool.pubkey,
+          stakeEntryIds: tokenDatas.map((token) => token.stakeEntry!.pubkey),
+        })
       }
 
-      const tokensToStake = tokenDatas
-      const txs: Transaction[] = (
-        await Promise.all(
-          tokensToStake.map(async (token, i) => {
-            try {
-              if (!token || !token.stakeEntry) {
-                throw new Error('No stake entry for token')
-              }
-              const transaction = new Transaction()
-              if (i === 0 && ataTx.instructions.length > 0) {
-                transaction.instructions = ataTx.instructions
-              }
-
-              let claimTxs: Transaction[] = []
-              if (isRewardDistributorV2(rewardDistributorData.data!.parsed!)) {
-                claimTxs = await claimRewardsV2(
-                  connection,
-                  wallet,
-                  stakePool.parsed!.identifier,
-                  [
-                    {
-                      mintId: token.stakeEntry.parsed!.stakeMint,
-                    },
-                  ],
-                  rewardDistributorData.data
-                    ? [rewardDistributorData.data.pubkey]
-                    : [],
-                  true
-                )
-              } else {
-                claimTxs = [
-                  await claimRewards(connection, wallet, {
-                    stakePoolId: stakePool.pubkey,
-                    stakeEntryId: token.stakeEntry.pubkey,
-                    skipRewardMintTokenAccount: true,
-                  }),
-                ]
-              }
-
-              transaction.instructions = [
-                ...transaction.instructions,
-                ...claimTxs.map((tx) => tx.instructions).flat(),
-              ]
-              return transaction
-            } catch (e) {
-              notify({
-                message: `${e}`,
-                description: `Failed to claim rewards for token ${token?.stakeEntry?.pubkey.toString()}`,
-                type: 'error',
-              })
-              return null
-            }
-          })
-        )
-      ).filter((x): x is Transaction => x !== null)
-
-      const [firstTx, ...remainingTxs] = txs
-      await executeAllTransactions(
-        connection,
-        wallet,
-        ataTx.instructions.length > 0 ? remainingTxs : txs,
-        {
-          notificationConfig: {
-            message: 'Successfully claimed rewards',
-            description: 'These rewards are now available in your wallet',
-          },
+      return executeTransactionSequence(connection, txs, wallet, {
+        confirmOptions: { skipPreflight: true },
+        errorHandler: (e) => {
+          notify({ message: 'Failed to claim rewards', description: `${e}` })
+          logError(e)
+          return null
         },
-        ataTx.instructions.length > 0 ? firstTx : undefined
-      )
+      })
     },
     {
-      onSuccess: () => {
+      onSuccess: (txids) => {
+        const filteredTxids = txids.flat().filter((x): x is string => !!x)
+        if (filteredTxids.length !== 0) {
+          notify({
+            message: `Successfully claimed rewards ${filteredTxids.length}/${
+              txids.flat().length
+            }`,
+            description: 'Stake progress will now dynamically update',
+          })
+        }
         queryClient.resetQueries([REWARD_QUERY_KEY])
         queryClient.resetQueries([TOKEN_DATAS_KEY])
       },
